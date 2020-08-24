@@ -7,6 +7,11 @@ from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 from datetime import datetime
 from dependencies.ConfigReader import config
 from dependencies.ElternportalCrawler import CrawledExam
+import signal
+
+
+def signal_handler(signum, frame):
+    raise Exception("An Error with the google api occurred!")
 
 
 class Calendar:
@@ -17,6 +22,7 @@ class Calendar:
         self.dependencies_path = os.path.dirname(__file__)
         self.__token_path = os.path.join(self.dependencies_path, "token.pkl")
         self.__calendar_id_path = os.path.join(self.dependencies_path, "calendarID.txt")
+        signal.signal(signal.SIGALRM, signal_handler)
 
     # if the token is already saved returns true else returns false
     def __is_already_authenticated(self):
@@ -54,7 +60,7 @@ class Calendar:
                 return flow.credentials
             except InvalidGrantError:
                 write_log("Invalid authorization code.")
-                exit()
+                exit(0)
 
     # creates a service with the token
     def __create_sevice(self):
@@ -84,7 +90,10 @@ class Calendar:
         calendar_body = {
             'summary': self.__calendar_name,
         }
+        signal.alarm(30)
         created_calendar = service.calendars().insert(body=calendar_body).execute()
+        signal.alarm(0)
+
         calendar_id = created_calendar["id"]
         self.__save_calendar_id(calendar_id)
         write_log("Created new Calendar.", "Calendar-ID: " + calendar_id,
@@ -117,10 +126,12 @@ class Calendar:
                 ],
             },
         }
-
+        signal.alarm(30)
         event = service.events().insert(calendarId=calender_id, body=event).execute()
+        signal.alarm(0)
+
         event_id = event["id"]
-        write_log("Event created.", "Event-ID: " + event_id)
+        write_log("Event created.", "Event-ID: " + event_id, "Event-Title: " + title)
         return event_id
 
     # fetches all events on the google calendar
@@ -129,7 +140,9 @@ class Calendar:
         page_token = None
         service = self.__create_sevice()
         while True:
+            signal.alarm(30)
             events = service.events().list(calendarId=self.__get_calendar_id(), pageToken=page_token).execute()
+            signal.alarm(0)
             for event in events['items']:
                 title = event["summary"]
                 start_time = self.__turn_into_date_obj(event['start']["date"])
@@ -146,7 +159,9 @@ class Calendar:
     def delete_event(self, event_id):
         service = self.__create_sevice()
         calendar_id = self.__get_calendar_id()
+        signal.alarm(30)
         service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
+        signal.alarm(0)
         write_log("Event deleted.", "Deleted-Event-ID: " + event_id)
 
     # this update method first deletes and than creates a new event

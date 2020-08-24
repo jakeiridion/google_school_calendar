@@ -3,6 +3,7 @@ import requests
 from datetime import datetime
 from dependencies.ConfigReader import config
 from dependencies.Logger import write_log
+import time
 
 
 class CrawledExam:
@@ -14,26 +15,22 @@ class CrawledExam:
 
 class Crawler:
     def __init__(self):
-        self.url = "https://klengymuc.eltern-portal.org/"
-        self.post_url = "https://klengymuc.eltern-portal.org/includes/project/auth/login.php"
-        self.end_url = "https://klengymuc.eltern-portal.org/service/termine/liste"
+        self.url = config.url
+        self.post_url = config.post_url
+        self.end_url = config.end_url
         self.payload = {"username": config.email,
                         "password": config.password}
-
-    def check_elternportal_logindata(self, response):
-        if "Benutzername/Passwort inkorrekt." in response:
-            print("Wrong login information")
-            exit(0)
+        self.headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:79.0) Gecko/20100101 "
+                                      "Firefox/79.0"}
 
     def login(self, session):
-        r = session.get(self.url)
-        r = session.post(self.post_url, data=self.payload)
-        self.check_elternportal_logindata(r.text)
+        session.get(self.url, timeout=10, headers=self.headers)
+        session.post(self.post_url, data=self.payload, timeout=10, headers=self.headers)
 
     def fetch_soup(self):
-        with requests.session() as session:
+        with requests.Session() as session:
             self.login(session)
-            r = session.get(self.end_url)
+            r = session.get(self.end_url, timeout=10, headers=self.headers)
             soup = BeautifulSoup(r.text, "html.parser")
             return soup
 

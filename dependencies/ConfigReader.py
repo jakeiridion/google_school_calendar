@@ -1,6 +1,7 @@
 import configparser
 import os
 from dependencies.Logger import write_log
+from urllib.parse import urljoin
 
 
 class Config:
@@ -11,6 +12,9 @@ class Config:
             cfg = configparser.ConfigParser()
             cfg.read(cfg_path)
 
+            self.url = str(cfg.get("Settings", "url"))
+            self.post_url = urljoin(self.url, "/includes/project/auth/login.php")
+            self.end_url = urljoin(self.url, "/service/termine/liste")
             self.calendar_name = str(cfg.get("Settings", "calendar_name"))
             self.email = str(cfg.get("Settings", "email"))
             self.password = str(cfg.get("Settings", "password"))
@@ -24,7 +28,7 @@ class Config:
 
             # raises an exception if the path to the client secret file was entered incorrectly
             if os.path.isfile(self.client_secret_path) is False:
-                raise Exception("No such file or directory: " + self.client_secret_path)
+                raise Exception("No such file: " + self.client_secret_path)
 
             # raises an exception if the time between the checks is negative or zero
             if self.wait_between_check <= 0 or self.wait_between_error <= 0:

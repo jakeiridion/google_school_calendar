@@ -19,9 +19,9 @@ class Calendar:
         self.__scopes = ["https://www.googleapis.com/auth/calendar"]
         self.__calendar_name = config.calendar_name
         self.__client_secret_path = config.client_secret_path
-        self.dependencies_path = os.path.dirname(__file__)
-        self.__token_path = os.path.join(self.dependencies_path, "token.pkl")
-        self.__calendar_id_path = os.path.join(self.dependencies_path, "calendarID.txt")
+        self.__dependencies_path = os.path.dirname(__file__)
+        self.__token_path = os.path.join(self.__dependencies_path, "token.pkl")
+        self.__calendar_id_path = os.path.join(self.__dependencies_path, "calendarID.txt")
         signal.signal(signal.SIGALRM, signal_handler)
 
     # if the token is already saved returns true else returns false
@@ -59,7 +59,7 @@ class Calendar:
                 self.__save_credentials(flow.credentials)
                 return flow.credentials
             except InvalidGrantError:
-                write_log("Invalid authorization code.")
+                write_log("Invalid authorization code.", "Application terminated.")
                 exit(0)
 
     # creates a service with the token
@@ -136,6 +136,7 @@ class Calendar:
 
     # fetches all events on the google calendar
     def fetch_events(self):
+        write_log("Crawling all exams from the google calendar.")
         calendar_events = []
         page_token = None
         service = self.__create_sevice()
@@ -151,7 +152,6 @@ class Calendar:
             page_token = events.get('nextPageToken')
             if not page_token:
                 break
-        write_log("Crawling all events from the google calendar.")
 
         calendar_events.sort(key=lambda exam: (exam.title.lower(), exam.start_date))
         return calendar_events

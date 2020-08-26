@@ -43,7 +43,7 @@ class Config:
             print()
             print("An Error Occurred with your Settings:")
             print(exception)
-            write_log("An Error Occurred with your Settings", exception)
+            write_log("An Error Occurred with your Settings", exception, "Application terminated.")
             exit(0)
 
 

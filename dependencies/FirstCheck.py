@@ -35,6 +35,7 @@ class Check:
             return True
         return False
 
+    # returns False if any of the checks fail. Else returns True.
     def do_the_check(self):
         try:
             if self.__check_internet_connection() is False:

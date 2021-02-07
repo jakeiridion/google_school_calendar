@@ -22,7 +22,9 @@ class Crawler:
 
     # Using the session to login to elternportal.
     def __login(self, session):
-        session.get(config.url, timeout=10, headers=self.__headers)
+        r = session.get(config.url, timeout=10, headers=self.__headers)
+        soup = BeautifulSoup(r.text, "html.parser")
+        self.__payload["csrf"] = soup.find("input")["value"]
         session.post(config.post_url, data=self.__payload, timeout=10, headers=self.__headers)
 
     # returns the soup after the login and after it navigated to the exams list.

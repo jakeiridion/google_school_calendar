@@ -84,7 +84,7 @@ class Calendar:
             return True
         return False
 
-    # creates a new calendar with the specified timezone and the name HLTV CSGO Events
+    # creates a new calendar
     def __create_new_calendar(self):
         service = self.__create_sevice()
         calendar_body = {

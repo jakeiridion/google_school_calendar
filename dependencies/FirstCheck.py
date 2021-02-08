@@ -1,4 +1,5 @@
 import requests
+from bs4 import BeautifulSoup
 from dependencies.ConfigReader import config
 from dependencies.Logger import write_log
 
@@ -22,6 +23,8 @@ class Check:
                           "password": config.password}
 
             r = s.get(config.url, timeout=10, headers=self.__headers)
+            soup = BeautifulSoup(r.text, "html.parser")
+            login_data["csrf"] = soup.find("input")["value"]
             r = s.post(config.post_url, data=login_data, timeout=10, headers=self.__headers)
 
             if "Benutzername/Passwort inkorrekt." in r.text:
